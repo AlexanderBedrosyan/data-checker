@@ -8,8 +8,8 @@ services:
     container_name: data_checker_app
     ports:
       - "5000:5000"
-    volumes:
-      - .:/app
+#    volumes:
+#      - .:/app
     env_file:
       - .env
     healthcheck:
