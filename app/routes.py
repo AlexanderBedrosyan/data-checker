@@ -1,11 +1,8 @@
-# app/routes.py
-from flask import Blueprint, render_template, current_app
+from .views import HomeView, LoginView
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 
 main = Blueprint('main', __name__)
 
-
-@main.route('/', strict_slashes=False)
-def home():
-    current_app.logger.info("Home route hit")
-    return render_template('index.html')
+main.add_url_rule('/', view_func=HomeView.as_view('home'))
+main.add_url_rule('/login', view_func=LoginView.as_view('login'))
 
