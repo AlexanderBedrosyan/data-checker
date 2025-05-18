@@ -9,7 +9,10 @@
 <body>
 <div class="login-wrapper">
     <div class="login-box">
-        <form method="POST">
+        <form method="POST" action="{{ url_for('main.login') }}">
+            <!-- CSRF token manually included -->
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
             <h2>Login</h2>
             <input type="text" name="username" placeholder="Username" required>
             <input type="email" name="email" placeholder="Email" required>
