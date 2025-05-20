@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home page</title>
+</head>
+<body>
+    <h2>Welcome Home!</h2>
+    <p>Hello, {{ current_user.email }}!</p>
+    <a href="{{ url_for('main.logout') }}">Logout</a>
+</body>
+</html>
