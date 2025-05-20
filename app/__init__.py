@@ -1,10 +1,12 @@
-from flask import Flask
+from flask import Flask, session, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
-from app.models import User
+from flask_login import LoginManager, logout_user, current_user
+from app.models import EnvUser
 from flask_wtf import CSRFProtect
 import os
 from dotenv import load_dotenv
+from datetime import timedelta, datetime
+from app.routes import auth, main
 
 # Load the .env file
 load_dotenv()
@@ -20,21 +22,42 @@ def create_app():
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///yourdb.sqlite3'
 
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
+
     # Initialize extensions with the app
     db.init_app(app)
     login_manager.init_app(app)
     csrf.init_app(app)  # init CSRF with app here
 
     # Import and register blueprints
-    from app.routes import main
     app.register_blueprint(main)
+    app.register_blueprint(auth)
 
     # Where to redirect for @login_required
     login_manager.login_view = 'main.login'
 
+    @login_manager.user_loader
+    def load_user(user_id):
+        if user_id == "1":
+            return EnvUser(email=os.getenv("EMAIL"))
+        return None
+
+    @app.before_request
+    def manage_session_timeout():
+        if current_user.is_authenticated:
+            now = datetime.utcnow()
+            last_active = session.get('last_active')
+
+            if last_active:
+                elapsed = now - datetime.fromisoformat(last_active)
+                if elapsed > timedelta(minutes=1):
+                    logout_user()
+                    flash("Your session has expired due to inactivity.", "warning")
+                    return redirect(url_for('main.login'))
+
+            session['last_active'] = now.isoformat()
+        else:
+            session.pop('last_active', None)
+
     return app
 
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
