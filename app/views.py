@@ -48,7 +48,7 @@ class HomeView(MethodView):
 class LogoutView(MethodView):
     decorators = [login_required]
 
-    def get(self):
+    def post(self):
         logout_user()
         flash("Logged out successfully.", "success")
         return redirect(url_for('main.login'))
