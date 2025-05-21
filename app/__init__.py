@@ -50,7 +50,7 @@ def create_app():
 
             if last_active:
                 elapsed = now - datetime.fromisoformat(last_active)
-                if elapsed > timedelta(minutes=1):
+                if elapsed > timedelta(minutes=30):
                     logout_user()
                     flash("Your session has expired due to inactivity.", "warning")
                     return redirect(url_for('main.login'))
