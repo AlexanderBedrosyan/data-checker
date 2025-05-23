@@ -26,6 +26,20 @@ body {
     overflow: hidden;
 }
 
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    width: 100%;
+    max-width: 500px;
+    margin-top: 3rem;
+}
+
+.small-card {
+    max-width: 350px;
+}
+
 /* Animated border */
 .card::before {
     content: '';
