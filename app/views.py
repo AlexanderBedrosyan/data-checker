@@ -5,11 +5,23 @@ from werkzeug.security import check_password_hash
 from app.models import EnvUser
 import os
 from dotenv import load_dotenv
+from werkzeug.utils import secure_filename
 
 # Load the .env file
 load_dotenv()
 
 auth_blueprint = Blueprint('auth', __name__)
+
+
+def clear_upload_folder():
+    upload_folder = current_app.config['UPLOAD_FOLDER']
+    for filename in os.listdir(upload_folder):
+        file_path = os.path.join(upload_folder, filename)
+        try:
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+        except Exception as e:
+            current_app.logger.error(f'Error deleting file {file_path}: {e}')
 
 
 class LoginView(MethodView):
@@ -52,3 +64,38 @@ class LogoutView(MethodView):
         logout_user()
         flash("Logged out successfully.", "success")
         return redirect(url_for('main.login'))
+
+
+class UploadView(MethodView):
+    decorators = [login_required]
+
+    def post(self):
+        uploaded_file = request.files.get('file')
+        if not uploaded_file:
+            flash("Не е избран файл.", "danger")
+            return redirect(url_for('main.home'))
+
+        filename = secure_filename(uploaded_file.filename)
+        file_ext = os.path.splitext(filename)[1].lower()
+
+        allowed_extensions = current_app.config['UPLOAD_EXTENSIONS']
+        if file_ext not in allowed_extensions:
+            flash("Неразрешен тип файл.", "danger")
+            return redirect(url_for('main.home'))
+
+        upload_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+        uploaded_file.save(upload_path)
+        flash("Файлът е качен успешно.", "success")
+        return redirect(url_for('main.home'))
+
+
+class AnalyzeView(MethodView):
+    decorators = [login_required]
+
+    def post(self):
+
+        clear_upload_folder()
+        # Тук ще добавиш логиката си по-късно
+        flash("Analysis complete!", "info")
+        return redirect(url_for('main.home'))
+
