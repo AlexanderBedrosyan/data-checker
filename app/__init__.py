@@ -24,6 +24,11 @@ def create_app():
 
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 
+    UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    app.config['UPLOAD_EXTENSIONS'] = ['.pdf', '.xls', '.xlsx']
+    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
     # Initialize extensions with the app
     db.init_app(app)
     login_manager.init_app(app)
