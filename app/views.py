@@ -85,7 +85,6 @@ class UploadView(MethodView):
                 return redirect(url_for('main.home'))
 
             upload_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-            print(upload_path)
             current_file.save(upload_path)
             flash("Файлът е качен успешно.", "success")
         return redirect(url_for('main.home'))
