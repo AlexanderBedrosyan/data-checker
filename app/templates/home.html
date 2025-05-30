@@ -28,7 +28,7 @@
                 <h2>Upload & Analyze</h2>
                 <form method="post" action="{{ url_for('main.upload') }}" enctype="multipart/form-data">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                    <input type="file" name="file" accept=".pdf,.xls,.xlsx">
+                    <input type="file" name="file" accept=".pdf,.xls,.xlsx" multiple>
                     <button type="submit">Upload</button>
                 </form>
                 <form method="post" action="{{ url_for('main.analyze') }}">
