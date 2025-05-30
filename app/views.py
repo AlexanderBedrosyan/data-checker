@@ -6,6 +6,7 @@ from app.models import EnvUser
 import os
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
+import unicodedata
 
 # Load the .env file
 load_dotenv()
@@ -70,22 +71,23 @@ class UploadView(MethodView):
     decorators = [login_required]
 
     def post(self):
-        uploaded_file = request.files.get('file')
-        if not uploaded_file:
+        uploaded_files = request.files.getlist('file')
+        if not uploaded_files:
             flash("Не е избран файл.", "danger")
             return redirect(url_for('main.home'))
 
-        filename = secure_filename(uploaded_file.filename)
-        file_ext = os.path.splitext(filename)[1].lower()
+        for current_file in uploaded_files:
+            filename = unicodedata.normalize('NFKD', current_file.filename).encode('ascii', 'ignore').decode('ascii')
+            file_ext = os.path.splitext(filename)[1].lower()
+            allowed_extensions = current_app.config['UPLOAD_EXTENSIONS']
+            if file_ext not in allowed_extensions:
+                flash("Неразрешен тип файл.", "danger")
+                return redirect(url_for('main.home'))
 
-        allowed_extensions = current_app.config['UPLOAD_EXTENSIONS']
-        if file_ext not in allowed_extensions:
-            flash("Неразрешен тип файл.", "danger")
-            return redirect(url_for('main.home'))
-
-        upload_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-        uploaded_file.save(upload_path)
-        flash("Файлът е качен успешно.", "success")
+            upload_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+            print(upload_path)
+            current_file.save(upload_path)
+            flash("Файлът е качен успешно.", "success")
         return redirect(url_for('main.home'))
 
 
