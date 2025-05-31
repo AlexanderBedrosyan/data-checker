@@ -4,40 +4,51 @@
     <meta charset="UTF-8">
     <title>Home Page</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
 
-    <div class="container">
+<div class="container">
 
-        <div class="card small-card">
-            <div class="login-box">
-                <h2>Welcome Home!</h2>
-                <p style="text-align: center; margin-bottom: 1rem;">
-                    Hello, <strong>{{ current_user.email }}</strong>!
-                </p>
-                <form method="post" action="{{ url_for('main.logout') }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                    <button type="submit">Logout</button>
-                </form>
-            </div>
+    <div class="card small-card">
+        <div class="login-box">
+            <h2>Welcome Home!</h2>
+            <p style="text-align: center; margin-bottom: 1rem;">
+                Hello, <strong>{{ current_user.email }}</strong>!
+            </p>
+            <form method="post" action="{{ url_for('main.logout') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <button type="submit">Logout</button>
+            </form>
         </div>
-
-        <!-- File Upload & Analyze -->
-        <div class="card">
-            <div class="login-box">
-                <h2>Upload & Analyze</h2>
-                <form method="post" action="{{ url_for('main.upload') }}" enctype="multipart/form-data">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                    <input type="file" name="file" accept=".pdf,.xls,.xlsx" multiple>
-                    <button type="submit">Upload</button>
-                </form>
-                <form method="post" action="{{ url_for('main.analyze') }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                    <button type="submit">Analyze File</button>
-                </form>
-            </div>
-        </div>
-
     </div>
+
+    <div class="card">
+        <div class="login-box">
+            <h2 style="text-align: center;">Upload & Analyze</h2>
+
+            <!-- Upload Form -->
+            <form method="post" action="{{ url_for('main.upload') }}" enctype="multipart/form-data"
+                  style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <label class="custom-file-upload">
+                    <input type="file" name="file" accept=".pdf,.xls,.xlsx" multiple>Choose file
+                </label>
+                <button type="submit">Upload</button>
+            </form>
+
+            <!-- Analyze Form -->
+            <form method="post" action="{{ url_for('main.analyze') }}"
+                  style="display: flex; flex-direction: column; align-items: center; gap: 1rem; margin-top: 2rem;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <label for="fileSelect" style="width: 100%; text-align: center;">Избери файл за анализ:</label>
+                <select id="fileSelect" name="selected_file" style="width: 60%; max-width: 300px;"></select>
+                <button type="submit">Analyze File</button>
+            </form>
+        </div>
+    </div>
+
+
+</div>
 </body>
 </html>
