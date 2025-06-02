@@ -83,7 +83,6 @@ body {
     background: #666;
 }
 
-/* Responsive adjustments */
 @media (max-width: 500px) {
     .login-box {
         padding: 1.5rem;
