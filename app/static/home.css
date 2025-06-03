@@ -196,3 +196,63 @@ select {
         width: 100%;
     }
 }
+
+/* Центриране и стил за самото поле */
+.select2-container {
+    width: 100% !important;
+    max-width: 300px;
+    text-align: left;
+    font-size: 1rem;
+    background-color: #2c2c2c;
+}
+
+/* Стил за падащото меню */
+.select2-container--default .select2-results>.select2-results__options {
+    background-color: #1e1e1e;
+    color: white;
+    border-radius: 8px;
+}
+
+/* Активен елемент */
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: #444;
+}
+
+/* Избран елемент */
+.select2-container--default .select2-selection--single {
+    background-color: #2c2c2c;
+    border: 1px solid #555;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    border-radius: 6px;
+    padding-left: 0.8rem;
+    color: white;
+}
+
+/* Малка икона за стрелката */
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 42px;
+    right: 10px;
+}
+
+body > div > div:nth-child(2) > div > form:nth-child(3) > span > span.selection > span {
+    background-color: #2c2c2c;
+}
+
+body > span > span > span.select2-search.select2-search--dropdown {
+    background-color: #2c2c2c;
+}
+
+body > span > span > span.select2-search.select2-search--dropdown > input {
+    background-color: #2c2c2c;
+    color: white;
+}
+
+body > span > span > span.select2-results {
+    background-color: #2c2c2c;
+}
+
+#select2-fileSelect-container {
+    color: white !important;
+}
