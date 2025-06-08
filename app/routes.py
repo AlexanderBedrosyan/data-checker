@@ -1,12 +1,16 @@
 from .views import HomeView, LoginView, LogoutView, UploadView, AnalyzeView
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify, abort
+from flask_login import login_required
 
 auth = Blueprint('auth', __name__)
 main = Blueprint('main', __name__)
 
 
 @main.route('/get-file-options')
+@login_required
 def get_file_options():
+    # if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
+    #     abort(403)
     query = request.args.get('q', '').lower()
 
     files = [
