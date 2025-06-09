@@ -7,12 +7,21 @@ import os
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
 import unicodedata
+from statements import pdf_convert_to_excel
 
 # Load the .env file
 load_dotenv()
 
 auth_blueprint = Blueprint('auth', __name__)
 
+
+def change_pdf_to_excel_file():
+    current_folder_path = os.getcwd().split("\\")
+    folder_path = '\\'.join(current_folder_path) + "\\uploads"
+
+    pdf_paths = pdf_convert_to_excel.find_pdf_file(folder_path)
+    excel_path = folder_path + '\\' + 'received_vendor_balance.xlsx'
+    pdf_convert_to_excel.pdf_to_excel(pdf_paths, excel_path)
 
 def clear_upload_folder():
     upload_folder = current_app.config['UPLOAD_FOLDER']
@@ -95,7 +104,7 @@ class AnalyzeView(MethodView):
 
     def post(self):
         selected_file = request.form.get('selected_file')
-        print(selected_file)
+        change_pdf_to_excel_file()
 
         clear_upload_folder()
         flash("Analysis complete!", "info")
