@@ -94,9 +94,10 @@ class AnalyzeView(MethodView):
     decorators = [login_required]
 
     def post(self):
+        selected_file = request.form.get('selected_file')
+        print(selected_file)
 
         clear_upload_folder()
-        # Тук ще добавиш логиката си по-късно
         flash("Analysis complete!", "info")
         return redirect(url_for('main.home'))
 
