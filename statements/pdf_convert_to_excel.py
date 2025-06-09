@@ -68,8 +68,8 @@ def pdf_to_excel(pdf_paths=List, excel_path=str):
             continue
 
 
-current_folder_path = os.getcwd().split("\\")
-folder_path = '\\'.join(current_folder_path[:-1]) + "\\uploads"
-pdf_paths = find_pdf_file(folder_path)
-excel_path = folder_path + '\\' + 'received_vendor_balance.xlsx'
-pdf_to_excel(pdf_paths, excel_path)
+# current_folder_path = os.getcwd().split("\\")
+# folder_path = '\\'.join(current_folder_path[:-1]) + "\\uploads"
+# pdf_paths = find_pdf_file(folder_path)
+# excel_path = folder_path + '\\' + 'received_vendor_balance.xlsx'
+# pdf_to_excel(pdf_paths, excel_path)
