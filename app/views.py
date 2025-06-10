@@ -9,20 +9,18 @@ from werkzeug.utils import secure_filename
 import unicodedata
 from statements import pdf_convert_to_excel, basic_model, diff_checker, company_mapper
 from statements.bc_balances import bc_balance
-import logging
 
 # Load the .env file
 load_dotenv()
 
 auth_blueprint = Blueprint('auth', __name__)
-logger = logging.getLogger(__name__)
 
 
 def change_pdf_to_excel_file():
     current_folder_path = os.getcwd().split("\\")
-    logger.info(f"================================{current_folder_path}")
+    print(f"================================{current_folder_path}")
     folder_path = '\\'.join(current_folder_path) + "\\uploads"
-    logger.info(f"================================{folder_path}")
+    print(f"================================{folder_path}")
     pdf_paths = pdf_convert_to_excel.find_pdf_file(folder_path)
     excel_path = folder_path + '\\' + 'received_vendor_balance.xlsx'
     pdf_convert_to_excel.pdf_to_excel(pdf_paths, excel_path)
