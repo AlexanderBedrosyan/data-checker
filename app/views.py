@@ -18,9 +18,7 @@ auth_blueprint = Blueprint('auth', __name__)
 
 def change_pdf_to_excel_file():
     current_folder_path = os.getcwd().split("\\")
-    print(f"================================{current_folder_path}")
     folder_path = '/'.join(current_folder_path) + "/uploads"
-    print(f"================================{folder_path}")
     pdf_paths = pdf_convert_to_excel.find_pdf_file(folder_path)
     excel_path = folder_path + '/' + 'received_vendor_balance.xlsx'
     pdf_convert_to_excel.pdf_to_excel(pdf_paths, excel_path)
@@ -109,9 +107,10 @@ class AnalyzeView(MethodView):
         selected_file = request.form.get('selected_file')
         print(selected_file)
         change_pdf_to_excel_file()
-        diff_checker.missing_doc_and_wrong_amount(bc_balance.bc_balance(), company_mapper.company_mapper[selected_file].vendor_balance(),
+        result = diff_checker.missing_doc_and_wrong_amount(bc_balance.bc_balance(), company_mapper.company_mapper[selected_file].vendor_balance(),
                                      company_mapper.company_mapper[selected_file])
         clear_upload_folder()
-        flash("Analysis complete!", "info")
-        return redirect(url_for('main.home'))
+        # flash("Analysis complete!", "info")
+        # return redirect(url_for('main.home'))
+        return result
 

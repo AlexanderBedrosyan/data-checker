@@ -1,5 +1,5 @@
 from .views import HomeView, LoginView, LogoutView, UploadView, AnalyzeView
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify, abort
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify, abort, send_file
 from flask_login import login_required
 
 auth = Blueprint('auth', __name__)
