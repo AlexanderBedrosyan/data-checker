@@ -7,6 +7,7 @@ main = Blueprint('main', __name__)
 
 
 @main.route('/get-file-options')
+
 @login_required
 def get_file_options():
     # if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
@@ -18,6 +19,7 @@ def get_file_options():
         {'id': '2', 'text': 'Ivan'},
         {'id': '3', 'text': 'Dragan'},
         {'id': '3', 'text': 'Petkan'},
+        {'id': 'ah_fragt', 'text': 'Ah Fragt'}
     ]
 
     filtered = [f for f in files if query in f['text'].lower()]

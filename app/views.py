@@ -7,7 +7,8 @@ import os
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
 import unicodedata
-from statements import pdf_convert_to_excel
+from statements import pdf_convert_to_excel, basic_model, diff_checker, company_mapper
+from statements.bc_balances import bc_balance
 
 # Load the .env file
 load_dotenv()
@@ -22,6 +23,7 @@ def change_pdf_to_excel_file():
     pdf_paths = pdf_convert_to_excel.find_pdf_file(folder_path)
     excel_path = folder_path + '\\' + 'received_vendor_balance.xlsx'
     pdf_convert_to_excel.pdf_to_excel(pdf_paths, excel_path)
+
 
 def clear_upload_folder():
     upload_folder = current_app.config['UPLOAD_FOLDER']
@@ -104,9 +106,11 @@ class AnalyzeView(MethodView):
 
     def post(self):
         selected_file = request.form.get('selected_file')
+        print(selected_file)
         change_pdf_to_excel_file()
-
-        clear_upload_folder()
+        diff_checker.missing_doc_and_wrong_amount(bc_balance.bc_balance(), company_mapper.company_mapper[selected_file].vendor_balance(),
+                                     company_mapper.company_mapper[selected_file])
+        # clear_upload_folder()
         flash("Analysis complete!", "info")
         return redirect(url_for('main.home'))
 
