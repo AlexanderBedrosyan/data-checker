@@ -110,7 +110,7 @@ class AnalyzeView(MethodView):
         change_pdf_to_excel_file()
         diff_checker.missing_doc_and_wrong_amount(bc_balance.bc_balance(), company_mapper.company_mapper[selected_file].vendor_balance(),
                                      company_mapper.company_mapper[selected_file])
-        # clear_upload_folder()
+        clear_upload_folder()
         flash("Analysis complete!", "info")
         return redirect(url_for('main.home'))
 
