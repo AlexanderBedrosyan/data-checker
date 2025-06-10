@@ -19,10 +19,10 @@ auth_blueprint = Blueprint('auth', __name__)
 def change_pdf_to_excel_file():
     current_folder_path = os.getcwd().split("\\")
     print(f"================================{current_folder_path}")
-    folder_path = '\\'.join(current_folder_path) + "\\uploads"
+    folder_path = '/'.join(current_folder_path) + "/uploads"
     print(f"================================{folder_path}")
     pdf_paths = pdf_convert_to_excel.find_pdf_file(folder_path)
-    excel_path = folder_path + '\\' + 'received_vendor_balance.xlsx'
+    excel_path = folder_path + '/' + 'received_vendor_balance.xlsx'
     pdf_convert_to_excel.pdf_to_excel(pdf_paths, excel_path)
 
 
