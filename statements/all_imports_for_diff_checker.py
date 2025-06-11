@@ -36,6 +36,6 @@ from statements.ah_fragt.ah_fragt_vendor_balance import *
 # from statements.dsv_road_as.dsv_road_vendor_balance import *
 # from statements.hcs_transort_spedition.hcs_transport_spedition import *
 # from statements.svend_e_sorensen.svend_e_sorensen_vendor_balance import *
-# from statements.egsj.egsj_vendor_balance import *
+from statements.egsj.egsj_vendor_balance import *
 # from statements.dtk_road.dtk_road_vendor_balance import *
 # from statements.jan_petersen.jan_petersen import *
