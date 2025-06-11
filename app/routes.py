@@ -19,7 +19,8 @@ def get_file_options():
         {'id': '2', 'text': 'Ivan'},
         {'id': '3', 'text': 'Dragan'},
         {'id': '3', 'text': 'Petkan'},
-        {'id': 'ah_fragt', 'text': 'Ah Fragt'}
+        {'id': 'ah_fragt', 'text': 'Ah Fragt'},
+        {'id': 'egsj', 'text': 'Esbjerg Gods'},
     ]
 
     filtered = [f for f in files if query in f['text'].lower()]
