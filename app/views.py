@@ -1,5 +1,5 @@
 from flask.views import MethodView
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, session
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash
 from app.models import EnvUser
@@ -45,6 +45,12 @@ class LoginView(MethodView):
         username = request.form.get('username')
         email = request.form.get('email')
         password = request.form.get('password')
+
+        captcha_input = request.form.get('captcha_input')
+
+        if captcha_input != session.get('captcha', ''): # new
+            flash('Incorrect CAPTCHA. Please try again.', 'danger')
+            return redirect(url_for('main.login'))
 
         private_username = os.getenv("USER")
         private_password = os.getenv("PASSWORD")
