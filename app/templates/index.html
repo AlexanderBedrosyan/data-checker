@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Login</title>
     <link rel="stylesheet" href={{ url_for('static', filename='login.css') }}>
+
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body>
 <div class="login-wrapper">
@@ -16,9 +18,20 @@
             <input type="text" name="username" placeholder="Username" required>
             <input type="email" name="email" placeholder="Email" required>
             <input type="password" name="password" placeholder="Password" required>
+
+            <div class="captcha-container" style="margin-top: 10px;">
+                <canvas id="captchaCanvas" width="150" height="50"></canvas>
+                <button type="button" onclick="generateCaptcha()">⟳</button>
+            </div>
+
+
+            <input name="captcha_input" id="captcha_input" placeholder="Enter CAPTCHA" required>
+
             <button type="submit">Login</button>
         </form>
     </div>
 </div>
+
+<script src="{{ url_for('static', filename='login.js') }}"></script>
 </body>
 </html>
