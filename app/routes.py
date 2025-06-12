@@ -1,5 +1,5 @@
 from .views import HomeView, LoginView, LogoutView, UploadView, AnalyzeView
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify, abort, send_file
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify, session
 from flask_login import login_required
 
 auth = Blueprint('auth', __name__)
@@ -27,6 +27,12 @@ def get_file_options():
 
     return jsonify(filtered)
 
+
+@main.route('/set-captcha', methods=['POST'])
+def set_captcha():
+    captcha = request.json.get('captcha')
+    session['captcha'] = captcha
+    return '', 200
 
 main.add_url_rule('/', view_func=HomeView.as_view('home'))
 main.add_url_rule('/login', view_func=LoginView.as_view('login'))
