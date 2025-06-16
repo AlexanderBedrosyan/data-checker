@@ -15,10 +15,6 @@ def get_file_options():
     query = request.args.get('q', '').lower()
 
     files = [
-        {'id': '1', 'text': 'Gosho'},
-        {'id': '2', 'text': 'Ivan'},
-        {'id': '3', 'text': 'Dragan'},
-        {'id': '3', 'text': 'Petkan'},
         {'id': 'ah_fragt', 'text': 'Ah Fragt'},
         {'id': 'egsj', 'text': 'Esbjerg Gods'},
     ]
