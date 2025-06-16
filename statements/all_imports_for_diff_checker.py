@@ -6,7 +6,7 @@ from statements.ah_fragt.ah_fragt_vendor_balance import *
 # from statements.timmerman.timmerman_vendor_balance import *
 # from statements.dfds_seaways_ab.dfds_seaways_ab_vendor_balance import *
 # from statements.vendelbo.vendelbo_vendor_balance import *
-# from statements.nordjysk_trailer_udlejning.nordjysk_trailer_udlejning_vendor_balance import *
+from statements.nordjysk_trailer_udlejning.nordjysk_trailer_udlejning_vendor_balance import *
 # from statements.fjord_line_as.fjord_line_as_vendor_balance import *
 # from statements.samarina_uab.samarina_uab_vendor_balance import *
 # from statements.europart_dk.europart_dk_vendor_balance import *
