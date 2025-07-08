@@ -10,7 +10,7 @@ def missing_doc_and_wrong_amount(bc_balance, vendor_balance, obj):
     missing_documents = {}
     wrong_amounts = {}
 
-    print(vendor_balance)
+    # print(vendor_balance)
     # print(bc_balance)
 
     for inv, value in vendor_balance.items():
