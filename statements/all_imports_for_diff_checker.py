@@ -30,10 +30,10 @@ from statements.nordjysk_trailer_udlejning.nordjysk_trailer_udlejning_vendor_bal
 # from statements.nc_scandinavia_as.nc_scandinavia_as_vendor_balance import *
 # from statements.fairtrans_dk.fairtrans_dk_vendor_balance import *
 # from statements.dfds_as.dfds_as_vendor_balance import *
-# from statements.transfennica_ltd.transfennica_ltd_vendor_balance import *
+from statements.transfennica_ltd.transfennica_ltd_vendor_balance import *
 # from statements.tt_line.tt_line_vendor_balance import *
 # from statements.stena_line_scandinavia_ab.stena_line_scandinavia_vendor_balance import *
-# from statements.dsv_road_as.dsv_road_vendor_balance import *
+from statements.dsv_road_as.dsv_road_vendor_balance import *
 # from statements.hcs_transort_spedition.hcs_transport_spedition import *
 # from statements.svend_e_sorensen.svend_e_sorensen_vendor_balance import *
 from statements.egsj.egsj_vendor_balance import *
