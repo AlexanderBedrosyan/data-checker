@@ -12,7 +12,7 @@ class BasicModel:
     def find_pdf_file(self):
         for file in os.listdir(self.folder_path):
             if (file.lower().endswith('.xlsx') or file.lower().endswith('.xls')) and file.lower().startswith('received'):
-                return self.folder_path + '/' + file
+                return self.folder_path + '\\' + file
 
     def regex_finder(self, text):
         pattern = r'\b\d{2,4}[-./]\d{2}[-./]\d{2,4}\b'
