@@ -6,4 +6,5 @@ company_mapper = {
     "nordjysk_trailer": nordjysk_trailer,
     "dtk_road": dtk_road,
     "dsv_road_as": dsv_road_as,
+    "svend_e_sorensen": svend_e_sorensen,
 }
