@@ -39,3 +39,4 @@ from statements.svend_e_sorensen.svend_e_sorensen_vendor_balance import *
 from statements.egsj.egsj_vendor_balance import *
 from statements.dtk_road.dtk_road_vendor_balance import *
 # from statements.jan_petersen.jan_petersen import *
+from statements.henrik_skov_christensen.henrik_skov_christensen import *
