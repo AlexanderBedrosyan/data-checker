@@ -31,7 +31,7 @@ class SvendSorensen(BasicModel):
 
             if invoice_num not in balance:
                 balance[invoice_num] = 0
-                
+
             try:
                 balance[invoice_num] += float(amount)
             except ValueError:
