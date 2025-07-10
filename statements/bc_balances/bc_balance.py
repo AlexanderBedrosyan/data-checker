@@ -69,7 +69,6 @@ def find_account_number():
     folder_path = os.path.join(os.path.dirname(CURRENT_DIR).rstrip("statements"), 'uploads')
     bc_balances_path = find_pdf_file(folder_path)
     account = []
-
     for path in bc_balances_path:
         workbook = load_workbook(filename=path)
 
@@ -87,6 +86,5 @@ def find_account_number():
                 account.append(row[index_placed])
 
     return account
-
 
 bc_balance()
