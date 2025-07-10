@@ -22,6 +22,8 @@ def get_file_options():
         {'id': 'transfennica_ltd', 'text': 'Transfennica LTD'},
         {'id': 'dsv_road_as', 'text': 'DSV ROAD A/S'},
         {'id': 'svend_e_sorensen', 'text': 'Svend E. Sorensen'},
+        {'id': 'henrik_skov_christensen', 'text': 'Henrik Skov Christensen'},
+        # {'id': 'stenaline_scandinavia', 'text': 'Stena Line Scandinavia AB'},
     ]
 
     filtered = [f for f in files if query in f['text'].lower()]
