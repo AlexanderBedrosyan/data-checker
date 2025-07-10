@@ -7,4 +7,6 @@ company_mapper = {
     "dtk_road": dtk_road,
     "dsv_road_as": dsv_road_as,
     "svend_e_sorensen": svend_e_sorensen,
+    "henrik_skov_christensen": henrik_skov_christensen,
+    # "stenaline_scandinavia": stenaline_scandinavia,
 }
