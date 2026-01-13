@@ -23,6 +23,7 @@ def get_file_options():
         {'id': 'dsv_road_as', 'text': 'DSV ROAD A/S'},
         {'id': 'svend_e_sorensen', 'text': 'Svend E. Sorensen'},
         {'id': 'henrik_skov_christensen', 'text': 'Henrik Skov Christensen'},
+        {'id': 'eurobulk', 'text': 'Eurobulk'},
         # {'id': 'stenaline_scandinavia', 'text': 'Stena Line Scandinavia AB'},
     ]
 

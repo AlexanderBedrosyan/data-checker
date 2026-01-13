@@ -1,5 +1,6 @@
 from statements.bc_balances.bc_balance import *
 from statements.ah_fragt.ah_fragt_vendor_balance import *
+from statements.eurobulk.eurobulk_vendor_balance import *
 # from statements.ntg_dk_neptun.neptun_vendor_balance import *
 # from statements.freja_transport.freja_vendor_balance import *
 # from statements.sft_logistics_dk.sft_logistics_vendor_balance import *
