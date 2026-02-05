@@ -127,3 +127,43 @@ class CheckReports(MethodView):
     def get(self):
         current_app.logger.info("Reports route hit")
         return render_template('report.html')
+    
+
+class UploadReportView(MethodView):
+    decorators = [login_required]
+
+    def post(self):
+        uploaded_files = request.files.getlist('file')
+        if not uploaded_files:
+            flash("Не е избран файл.", "danger")
+            return redirect(url_for('main.home'))
+
+        print(uploaded_files)
+        # for current_file in uploaded_files:
+        #     filename = unicodedata.normalize('NFKD', current_file.filename).encode('ascii', 'ignore').decode('ascii')
+        #     file_ext = os.path.splitext(filename)[1].lower()
+        #     allowed_extensions = current_app.config['UPLOAD_EXTENSIONS']
+        #     if file_ext not in allowed_extensions:
+        #         flash("Неразрешен тип файл.", "danger")
+        #         return redirect(url_for('main.home'))
+
+        #     upload_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+        #     current_file.save(upload_path)
+        #     flash("Файлът е качен успешно.", "success")
+        return redirect(url_for('main.reports'))
+    
+
+class ReportChecker(MethodView):
+    decorators = [login_required]
+
+    def post(self):
+        selected_file = request.form.get('selected_file')
+        print(selected_file)
+        # change_pdf_to_excel_file()
+        # result = diff_checker.missing_doc_and_wrong_amount(bc_balance.bc_balance(), company_mapper.company_mapper[selected_file].vendor_balance(),
+        #                              company_mapper.company_mapper[selected_file])
+        # clear_upload_folder()
+        # flash("Analysis complete!", "info")
+        # return redirect(url_for('main.home'))
+        return redirect(url_for('main.reports'))
+

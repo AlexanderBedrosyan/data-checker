@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Home Page</title>
+    <title>Report Page</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
@@ -36,7 +36,7 @@
             <h2 style="text-align: center;">Upload & Analyze</h2>
 
             <!-- Upload Form -->
-            <form method="post" action="{{ url_for('main.upload') }}" enctype="multipart/form-data"
+            <form method="post" action="{{ url_for('main.upload_report') }}" enctype="multipart/form-data"
                   style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <label class="custom-file-upload">
@@ -48,8 +48,8 @@
             <form method="post" action="{{ url_for('main.analyze') }}"
                   style="display: flex; flex-direction: column; align-items: center; gap: 1rem; margin-top: 2rem;">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                <label for="fileSelect" style="width: 100%; text-align: center;">Choose Company:</label>
-                <select select id="fileSelect" name="selected_file" class="styled-select" required></select>
+                <!-- <label for="fileSelect" style="width: 100%; text-align: center;">Choose Company:</label>
+                <select select id="fileSelect" name="selected_file" class="styled-select" required></select> -->
                 <button type="submit">Analyze File</button>
             </form>
         </div>
