@@ -120,3 +120,10 @@ class AnalyzeView(MethodView):
         # return redirect(url_for('main.home'))
         return result
 
+
+class CheckReports(MethodView):
+    decorators = [login_required]
+
+    def get(self):
+        current_app.logger.info("Reports route hit")
+        return render_template('report.html')
