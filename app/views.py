@@ -7,6 +7,7 @@ import os
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
 import unicodedata
+import io
 from statements import pdf_convert_to_excel, basic_model, diff_checker, company_mapper
 from statements.bc_balances import bc_balance
 from app.utils import extract_sheets_to_dicts, receivable_payable_preparation, ic_template_data_bs_preparation, column4_finder, process_excel_with_difference_logic
@@ -157,19 +158,21 @@ class UploadReportView(MethodView):
             # Process the Excel file with the new logic
             result_path = process_excel_with_difference_logic(uploaded_file, output_path)
             
-            # Register cleanup to happen after response is sent
-            @after_this_request
-            def cleanup(response):
-                try:
-                    clear_upload_folder()
-                except Exception as e:
-                    current_app.logger.error(f"Error cleaning upload folder: {e}")
-                return response
+            # Load file into memory before cleanup to avoid file locking issues
+            with open(result_path, 'rb') as f:
+                file_data = io.BytesIO(f.read())
+            file_data.seek(0)
             
-            # Send the file back to the user
+            # Now safe to clean up the upload folder
+            try:
+                clear_upload_folder()
+            except Exception as e:
+                current_app.logger.error(f"Error cleaning upload folder: {e}")
+            
+            # Send the file from memory to the user
             flash("Файлът е обработен успешно. Изтеглянето започва автоматично.", "success")
             return send_file(
-                result_path,
+                file_data,
                 as_attachment=True,
                 download_name=output_filename,
                 mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'

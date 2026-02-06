@@ -134,7 +134,7 @@ def process_excel_with_difference_logic(uploaded_file: FileStorage, output_path:
     
     # Define color fills
     yellow_fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
-    green_fill = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid")
+    green_fill = PatternFill(start_color="FF00B050", end_color="FF00B050", fill_type="solid")
     
     # Process ReceivablePayable sheet
     if "ReceivablePayable" not in wb.sheetnames:
@@ -187,7 +187,8 @@ def process_excel_with_difference_logic(uploaded_file: FileStorage, output_path:
         if not row or row[0] is None:
             continue
         
-        company_name = row[0]
+        company_name = f"{row[0]} - {row[1]}"
+
         # Assuming format: Company | SomeCode | Value
         if len(row) >= 3:
             code = str(row[1]) if row[1] else ""
@@ -196,20 +197,36 @@ def process_excel_with_difference_logic(uploaded_file: FileStorage, output_path:
             try:
                 value_float = float(value) if value else 0.0
                 # Only add if value is not zero
-                if value_float != 0.0:
-                    ic_data[company_name] = value_float
+                ic_data[company_name] = round(value_float, 2)
             except (ValueError, TypeError):
                 pass
     
     # Track which companies from IC data were found in ReceivablePayable
     found_companies = set()
+
+    def find_insert_row(sheet, company_col, company_name, start_row=2):
+        """Find the correct row position to insert a company name alphabetically"""
+        target_key = str(company_name).strip().casefold()
+        max_row = sheet.max_row
+
+        for row_idx in range(start_row, max_row + 1):
+            existing = sheet.cell(row=row_idx, column=company_col).value
+            if existing is None or str(existing).strip() == "":
+                continue
+
+            existing_key = str(existing).strip().casefold()
+            if existing_key > target_key:
+                return row_idx
+
+        return max_row + 1
     
     # Process each row in ReceivablePayable (starting from row 2)
     for row_idx in range(2, rp_sheet.max_row + 1):
         company_cell = rp_sheet.cell(row=row_idx, column=company_col_index)
         company_name = company_cell.value
         
-        if not company_name:
+        # Skip rows with empty company names
+        if not company_name or str(company_name).strip() == "":
             continue
         
         # Get value from last Difference column (before insertion)
@@ -224,6 +241,9 @@ def process_excel_with_difference_logic(uploaded_file: FileStorage, output_path:
         # Look for matching company in ICTemplateDataBS
         matching_ic_value = None
         for ic_company, ic_value in ic_data.items():
+            # Skip if ic_company is None or empty
+            if not ic_company:
+                continue
             if company_name == ic_company or company_name in ic_company or ic_company in company_name:
                 matching_ic_value = ic_value
                 found_companies.add(ic_company)
@@ -233,6 +253,8 @@ def process_excel_with_difference_logic(uploaded_file: FileStorage, output_path:
         if matching_ic_value is None:
             continue
         
+        # if company_name == "BG01 - DK00":
+        #     breakpoint()
         # Get Column4 value
         column4_cell = rp_sheet.cell(row=row_idx, column=column4_col_index) if column4_col_index else None
         column4_value = column4_cell.value if column4_cell else None
@@ -240,40 +262,46 @@ def process_excel_with_difference_logic(uploaded_file: FileStorage, output_path:
         # Apply logic
         new_cell = rp_sheet.cell(row=row_idx, column=new_diff_col_index)
         
+        # breakpoint()
         # Compare last_diff_value with matching_ic_value
-        if abs(last_diff_value - matching_ic_value) > 0.01:  # Different values (with small tolerance)
+        if abs(matching_ic_value) > 50000 and column4_value is None:  # Different values (with small tolerance)
             # Values are different -> add value and color yellow
             new_cell.value = matching_ic_value
             new_cell.fill = yellow_fill
         else:
-            # Values match -> check Column4
-            if not column4_value or column4_value == "":
-                # Column4 is empty -> add value with yellow color
-                new_cell.value = matching_ic_value
-                new_cell.fill = yellow_fill
-            else:
+            # # Values match -> check Column4
+            # if not column4_value or column4_value == "":
+            #     # Column4 is empty -> add value with yellow color
+            #     new_cell.value = matching_ic_value
+            #     new_cell.fill = yellow_fill
+            # else:
                 # Column4 is not empty -> add value with green color
                 new_cell.value = matching_ic_value
                 new_cell.fill = green_fill
     
-    # Add missing companies from ICTemplateDataBS as new rows
+    # Add missing companies from ICTemplateDataBS as new rows (alphabetically)
     missing_companies = set(ic_data.keys()) - found_companies
     
     if missing_companies:
-        # Get the next empty row
-        next_row = rp_sheet.max_row + 1
-        
-        for company_name in sorted(missing_companies):
+        # Insert missing companies in alphabetical order
+        for company_name in sorted(missing_companies, key=lambda x: str(x).strip().casefold()):
             ic_value = ic_data[company_name]
+
+            if abs(ic_value) < 50000:
+                continue  # Skip companies with zero value
+            
+            # Find correct position to insert based on alphabetical order
+            insert_row = find_insert_row(rp_sheet, company_col_index, company_name)
+            
+            # Insert a new row at the correct position
+            rp_sheet.insert_rows(insert_row)
             
             # Add company name in Company column
-            rp_sheet.cell(row=next_row, column=company_col_index, value=company_name)
+            rp_sheet.cell(row=insert_row, column=company_col_index, value=company_name)
             
             # Add value in the new Difference column with yellow color (since it's new)
-            new_cell = rp_sheet.cell(row=next_row, column=new_diff_col_index, value=ic_value)
+            new_cell = rp_sheet.cell(row=insert_row, column=new_diff_col_index, value=ic_value)
             new_cell.fill = yellow_fill
-            
-            next_row += 1
     
     # Save the modified workbook
     wb.save(output_path)
