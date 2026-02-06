@@ -122,44 +122,42 @@ def ic_template_data_bs_preparation(data):
     return final_report
 
 
-def process_excel_with_difference_logic(uploaded_file: FileStorage, output_path: str):
+def process_sheet_pair(wb, ic_template_sheet_name, target_sheet_name, yellow_fill, green_fill):
     """
-    Main function to process the Excel file with the Difference column logic.
+    Process one IC template sheet with its corresponding target sheet.
     
-    Steps:
-    1. Load the Excel file with formatting
-    2. Find the last Difference column in ReceivablePayable sheet
-    3. INSERT a new Difference column (not overwrite)
-    4. Compare values from ICTemplateDataBS and populate the new column
-    5. Apply color formatting (yellow or green)
-    6. Add missing companies from ICTemplateDataBS as new rows
-    7. Save the modified file
+    Args:
+        wb: The workbook object
+        ic_template_sheet_name: Name of the IC template sheet (e.g., "ICTemplateDataBS")
+        target_sheet_name: Name of the target sheet (e.g., "ReceivablePayable")
+        yellow_fill: PatternFill object for yellow color
+        green_fill: PatternFill object for green color
     """
-    # Load workbook with formatting preserved
-    wb = load_workbook(uploaded_file)
+    # Process target sheet
+    if target_sheet_name not in wb.sheetnames:
+        raise ValueError(f"Sheet '{target_sheet_name}' not found")
     
-    # Define color fills
-    yellow_fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
-    green_fill = PatternFill(start_color="FF00B050", end_color="FF00B050", fill_type="solid")
-    
-    # Process ReceivablePayable sheet
-    if "ReceivablePayable" not in wb.sheetnames:
-        raise ValueError("Sheet 'ReceivablePayable' not found")
-    
-    rp_sheet = wb["ReceivablePayable"]
+    target_sheet = wb[target_sheet_name]
     
     # Remove all tables in the sheet to prevent corruption when inserting rows/columns
-    if rp_sheet.tables:
-        tables_to_remove = list(rp_sheet.tables.keys())
+    if target_sheet.tables:
+        tables_to_remove = list(target_sheet.tables.keys())
         for table_name in tables_to_remove:
-            del rp_sheet.tables[table_name]
+            del target_sheet.tables[table_name]
+    target_sheet = wb[target_sheet_name]
+    
+    # Remove all tables in the sheet to prevent corruption when inserting rows/columns
+    if target_sheet.tables:
+        tables_to_remove = list(target_sheet.tables.keys())
+        for table_name in tables_to_remove:
+            del target_sheet.tables[table_name]
     
     # Get header row (first row)
     header_row = []
     company_col_index = None
     column4_col_index = None
     
-    for col_idx, cell in enumerate(rp_sheet[1], start=1):
+    for col_idx, cell in enumerate(target_sheet[1], start=1):
         header_value = cell.value
         header_row.append(header_value)
         
@@ -172,30 +170,35 @@ def process_excel_with_difference_logic(uploaded_file: FileStorage, output_path:
     last_diff_col_index, next_diff_number = find_last_difference_column(header_row)
     
     if last_diff_col_index == -1:
-        raise ValueError("No Difference column found in the header")
+        raise ValueError(f"No Difference column found in the header of {target_sheet_name}")
     
     # INSERT new column after the last Difference column
     # last_diff_col_index is 0-based, so +1 for column number, +1 for next position
     new_diff_col_index = last_diff_col_index + 2
-    rp_sheet.insert_cols(new_diff_col_index)
+    target_sheet.insert_cols(new_diff_col_index)
     
     # Add new Difference column header
     new_diff_header = f"Difference{next_diff_number}"
-    rp_sheet.cell(row=1, column=new_diff_col_index, value=new_diff_header)
+    target_sheet.cell(row=1, column=new_diff_col_index, value=new_diff_header)
     
     # Update column4_col_index if it was after the insertion point
     if column4_col_index and column4_col_index >= new_diff_col_index:
         column4_col_index += 1
     
-    # Process ICTemplateDataBS sheet
-    if "ICTemplateDataBS" not in wb.sheetnames:
-        raise ValueError("Sheet 'ICTemplateDataBS' not found")
+    # Process IC template sheet
+    if ic_template_sheet_name not in wb.sheetnames:
+        raise ValueError(f"Sheet '{ic_template_sheet_name}' not found")
     
-    # Extract ICTemplateDataBS data
+    # Extract IC template data
     ic_data = {}
-    ic_sheet = wb["ICTemplateDataBS"]
+    ic_sheet = wb[ic_template_sheet_name]
     
-    # Remove all tables in ICTemplateDataBS sheet as well
+    # Remove all tables in IC template sheet as well
+    if ic_sheet.tables:
+        tables_to_remove = list(ic_sheet.tables.keys())
+        for table_name in tables_to_remove:
+            del ic_sheet.tables[table_name]
+    # Remove all tables in IC template sheet as well
     if ic_sheet.tables:
         tables_to_remove = list(ic_sheet.tables.keys())
         for table_name in tables_to_remove:
@@ -220,7 +223,7 @@ def process_excel_with_difference_logic(uploaded_file: FileStorage, output_path:
                 pass
     
     ic_data = ic_data_modifier(ic_data)
-    # Track which companies from IC data were found in ReceivablePayable
+    # Track which companies from IC data were found in target sheet
     found_companies = set()
 
     def find_insert_row(sheet, company_col, company_name, start_row=2):
@@ -239,9 +242,9 @@ def process_excel_with_difference_logic(uploaded_file: FileStorage, output_path:
 
         return max_row + 1
     
-    # Process each row in ReceivablePayable (starting from row 2)
-    for row_idx in range(2, rp_sheet.max_row + 1):
-        company_cell = rp_sheet.cell(row=row_idx, column=company_col_index)
+    # Process each row in target sheet (starting from row 2)
+    for row_idx in range(2, target_sheet.max_row + 1):
+        company_cell = target_sheet.cell(row=row_idx, column=company_col_index)
         company_name = company_cell.value
         
         # Skip rows with empty company names
@@ -249,7 +252,7 @@ def process_excel_with_difference_logic(uploaded_file: FileStorage, output_path:
             continue
         
         # Get value from last Difference column (before insertion)
-        last_diff_cell = rp_sheet.cell(row=row_idx, column=last_diff_col_index + 1)
+        last_diff_cell = target_sheet.cell(row=row_idx, column=last_diff_col_index + 1)
         last_diff_value = last_diff_cell.value
         
         try:
@@ -257,7 +260,7 @@ def process_excel_with_difference_logic(uploaded_file: FileStorage, output_path:
         except (ValueError, TypeError):
             last_diff_value = 0.0
         
-        # Look for matching company in ICTemplateDataBS
+        # Look for matching company in IC data
         matching_ic_value = None
         for ic_company, ic_value in ic_data.items():
             # Skip if ic_company is None or empty
@@ -272,62 +275,105 @@ def process_excel_with_difference_logic(uploaded_file: FileStorage, output_path:
         if matching_ic_value is None:
             continue
         
-        # if company_name == "BG01 - DK00":
-        #     breakpoint()
         # Get Column4 value
-        column4_cell = rp_sheet.cell(row=row_idx, column=column4_col_index) if column4_col_index else None
+        column4_cell = target_sheet.cell(row=row_idx, column=column4_col_index) if column4_col_index else None
         column4_value = column4_cell.value if column4_cell else None
         
         # Apply logic
-        new_cell = rp_sheet.cell(row=row_idx, column=new_diff_col_index)
-        
-        # breakpoint()
-        # Compare last_diff_value with matching_ic_value
-        if abs(matching_ic_value) > 50000 and column4_value is None:  # Different values (with small tolerance)
+        new_cell = target_sheet.cell(row=row_idx, column=new_diff_col_index)
+
+        if target_sheet_name == "FTEs" and column4_value is None:
+            # For FTEs sheet, if Column4 is empty → add value with green color (even if values are the same)
+            new_cell.value = matching_ic_value
+            new_cell.fill = green_fill
+            # Compare last_diff_value with matching_ic_value
+        elif abs(matching_ic_value) > 50000 and column4_value is None:  # Different values (with small tolerance)
             # Values are different -> add value and color yellow
             new_cell.value = matching_ic_value
             new_cell.fill = yellow_fill
         else:
-            # # Values match -> check Column4
-            # if not column4_value or column4_value == "":
-            #     # Column4 is empty -> add value with yellow color
-            #     new_cell.value = matching_ic_value
-            #     new_cell.fill = yellow_fill
-            # else:
-                # Column4 is not empty -> add value with green color
-                new_cell.value = matching_ic_value
-                new_cell.fill = green_fill
+            # Column4 is not empty -> add value with green color
+            new_cell.value = matching_ic_value
+            new_cell.fill = green_fill
     
-    # Add missing companies from ICTemplateDataBS as new rows (alphabetically)
+    # Add missing companies from IC data as new rows (alphabetically)
     missing_companies = set(ic_data.keys()) - found_companies
-    
+
     if missing_companies:
         # Insert missing companies in alphabetical order
         for company_name in sorted(missing_companies, key=lambda x: str(x).strip().casefold()):
             ic_value = ic_data[company_name]
 
-            if abs(ic_value) < 50000:
-                continue  # Skip companies with zero value
+            if abs(ic_value) < 50000 and target_sheet_name != "FTEs":
+                continue  # Skip companies with low value
+
+            if abs(ic_value) == 0 and target_sheet_name == "FTEs":
+                continue  # Skip companies with low value in FTEs sheet
             
             # Find correct position to insert based on alphabetical order
-            insert_row = find_insert_row(rp_sheet, company_col_index, company_name)
+            insert_row = find_insert_row(target_sheet, company_col_index, company_name)
             
             # Insert a new row at the correct position
-            rp_sheet.insert_rows(insert_row)
+            target_sheet.insert_rows(insert_row)
             
             # Add company name in Company column
-            rp_sheet.cell(row=insert_row, column=company_col_index, value=company_name)
+            target_sheet.cell(row=insert_row, column=company_col_index, value=company_name)
             
             # Add value in the new Difference column with yellow color (since it's new)
-            new_cell = rp_sheet.cell(row=insert_row, column=new_diff_col_index, value=ic_value)
+            new_cell = target_sheet.cell(row=insert_row, column=new_diff_col_index, value=ic_value)
             new_cell.fill = yellow_fill
     
     # Clear data validation rules to prevent corruption
-    if hasattr(rp_sheet, 'data_validations') and rp_sheet.data_validations:
-        rp_sheet.data_validations = None
+    if hasattr(target_sheet, 'data_validations') and target_sheet.data_validations:
+        target_sheet.data_validations = None
     
     if hasattr(ic_sheet, 'data_validations') and ic_sheet.data_validations:
         ic_sheet.data_validations = None
+
+
+def process_excel_with_difference_logic(uploaded_file: FileStorage, output_path: str):
+    """
+    Main function to process the Excel file with the Difference column logic for all sheet pairs.
+    
+    Processes the following sheet pairs:
+    - ICTemplateDataBS → ReceivablePayable
+    - ICTemplateDataICL → Loan
+    - ICTemplateDataCP → Cash Pool
+    - ICTemplateDataFTE → FTEs
+    
+    Steps:
+    1. Load the Excel file with formatting
+    2. For each sheet pair:
+       a. Find the last Difference column
+       b. INSERT a new Difference column (not overwrite)
+       c. Compare values from IC template and populate the new column
+       d. Apply color formatting (yellow or green)
+       e. Add missing companies as new rows
+    3. Save the modified file
+    """
+    # Load workbook with formatting preserved
+    wb = load_workbook(uploaded_file)
+    
+    # Define color fills
+    yellow_fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
+    green_fill = PatternFill(start_color="FF00B050", end_color="FF00B050", fill_type="solid")
+    
+    # Define sheet pairs: IC template sheet → Target sheet
+    sheet_pairs = [
+        ("ICTemplateDataBS", "ReceivablePayable"),
+        ("ICTemplateDataICL", "Loan"),
+        ("ICTemplateDataCP", "Cash Pool"),
+        ("ICTemplateDataFTE", "FTEs")
+    ]
+    
+    # Process each sheet pair
+    for ic_template_sheet, target_sheet in sheet_pairs:
+        try:
+            process_sheet_pair(wb, ic_template_sheet, target_sheet, yellow_fill, green_fill)
+        except ValueError as e:
+            # Log the error but continue with other sheets
+            print(f"Warning: Could not process {ic_template_sheet} → {target_sheet}: {e}")
+            continue
     
     # Save the modified workbook
     wb.save(output_path)
