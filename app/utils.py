@@ -83,8 +83,14 @@ def find_last_difference_column(header_row):
     return last_diff_index, next_diff_number
 
 
-def receivable_payable_preparation(data):
-    pass
+def ic_data_modifier(ic_data):
+    for company_name in list(ic_data.keys())[::-1]:
+        first_code, second_code = company_name.split(" - ")
+
+        test_code = f"{second_code} - {first_code}"
+        if test_code in ic_data:
+            ic_data.pop(company_name)
+    return ic_data
 
 def ic_template_data_bs_preparation(data):
     """
@@ -213,6 +219,7 @@ def process_excel_with_difference_logic(uploaded_file: FileStorage, output_path:
             except (ValueError, TypeError):
                 pass
     
+    ic_data = ic_data_modifier(ic_data)
     # Track which companies from IC data were found in ReceivablePayable
     found_companies = set()
 

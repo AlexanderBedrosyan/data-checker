@@ -10,7 +10,7 @@ import unicodedata
 import io
 from statements import pdf_convert_to_excel, basic_model, diff_checker, company_mapper
 from statements.bc_balances import bc_balance
-from app.utils import extract_sheets_to_dicts, receivable_payable_preparation, ic_template_data_bs_preparation, column4_finder, process_excel_with_difference_logic
+from app.utils import extract_sheets_to_dicts, ic_template_data_bs_preparation, column4_finder, process_excel_with_difference_logic
 
 # Load the .env file
 load_dotenv()
