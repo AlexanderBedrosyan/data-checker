@@ -37,7 +37,7 @@
 
             <!-- Upload Form -->
             <form method="post" action="{{ url_for('main.upload_report') }}" enctype="multipart/form-data"
-                  style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                  style="display: flex; flex-direction: column; align-items: center; gap: 1rem; margin-bottom: 15px;">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <label class="custom-file-upload">
                     <input type="file" name="file" accept=".pdf,.xls,.xlsx" multiple>Choose file
@@ -45,13 +45,19 @@
                 <button type="submit">Upload</button>
             </form>
 
-            <form method="post" action="{{ url_for('main.analyze') }}"
-                  style="display: flex; flex-direction: column; align-items: center; gap: 1rem; margin-top: 2rem;">
+            <form method="post" action="{{ url_for('main.delete_reports') }}" enctype="multipart/form-data"
+                  style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <button type="submit">Delete</button>
+            </form>
+
+            <!-- <form method="post" action="{{ url_for('main.analyze') }}"
+                  style="display: flex; flex-direction: column; align-items: center; gap: 1rem; margin-top: 2rem;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/> -->
                 <!-- <label for="fileSelect" style="width: 100%; text-align: center;">Choose Company:</label>
                 <select select id="fileSelect" name="selected_file" class="styled-select" required></select> -->
-                <button type="submit">Analyze File</button>
-            </form>
+                <!-- <button type="submit">Analyze File</button>
+            </form> -->
         </div>
     </div>
 </div>

@@ -1,5 +1,5 @@
 from flask.views import MethodView
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, session, send_file, after_this_request
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash
 from app.models import EnvUser
@@ -9,6 +9,7 @@ from werkzeug.utils import secure_filename
 import unicodedata
 from statements import pdf_convert_to_excel, basic_model, diff_checker, company_mapper
 from statements.bc_balances import bc_balance
+from app.utils import extract_sheets_to_dicts, receivable_payable_preparation, ic_template_data_bs_preparation, column4_finder, process_excel_with_difference_logic
 
 # Load the .env file
 load_dotenv()
@@ -134,36 +135,57 @@ class UploadReportView(MethodView):
 
     def post(self):
         uploaded_files = request.files.getlist('file')
-        if not uploaded_files:
+        if not uploaded_files or not uploaded_files[0].filename:
             flash("Не е избран файл.", "danger")
-            return redirect(url_for('main.home'))
+            return redirect(url_for('main.reports'))
 
-        print(uploaded_files)
-        # for current_file in uploaded_files:
-        #     filename = unicodedata.normalize('NFKD', current_file.filename).encode('ascii', 'ignore').decode('ascii')
-        #     file_ext = os.path.splitext(filename)[1].lower()
-        #     allowed_extensions = current_app.config['UPLOAD_EXTENSIONS']
-        #     if file_ext not in allowed_extensions:
-        #         flash("Неразрешен тип файл.", "danger")
-        #         return redirect(url_for('main.home'))
-
-        #     upload_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-        #     current_file.save(upload_path)
-        #     flash("Файлът е качен успешно.", "success")
-        return redirect(url_for('main.reports'))
+        try:
+            # Get the uploaded file
+            uploaded_file = uploaded_files[0]
+            
+            # Create a temporary file path for the output
+            upload_folder = current_app.config.get('UPLOAD_FOLDER', 'uploads')
+            if not os.path.exists(upload_folder):
+                os.makedirs(upload_folder)
+            
+            # Generate output filename
+            original_filename = secure_filename(uploaded_file.filename)
+            filename_without_ext, file_ext = os.path.splitext(original_filename)
+            output_filename = f"{filename_without_ext}_processed{file_ext}"
+            output_path = os.path.join(upload_folder, output_filename)
+            
+            # Process the Excel file with the new logic
+            result_path = process_excel_with_difference_logic(uploaded_file, output_path)
+            
+            # Register cleanup to happen after response is sent
+            @after_this_request
+            def cleanup(response):
+                try:
+                    clear_upload_folder()
+                except Exception as e:
+                    current_app.logger.error(f"Error cleaning upload folder: {e}")
+                return response
+            
+            # Send the file back to the user
+            flash("Файлът е обработен успешно. Изтеглянето започва автоматично.", "success")
+            return send_file(
+                result_path,
+                as_attachment=True,
+                download_name=output_filename,
+                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+            
+        except Exception as e:
+            current_app.logger.error(f"Error processing file: {e}")
+            flash(f"Грешка при обработка на файла: {str(e)}", "danger")
+            clear_upload_folder()
+            return redirect(url_for('main.reports'))
     
 
-class ReportChecker(MethodView):
+class DeleteReportsView(MethodView):
     decorators = [login_required]
 
     def post(self):
-        selected_file = request.form.get('selected_file')
-        print(selected_file)
-        # change_pdf_to_excel_file()
-        # result = diff_checker.missing_doc_and_wrong_amount(bc_balance.bc_balance(), company_mapper.company_mapper[selected_file].vendor_balance(),
-        #                              company_mapper.company_mapper[selected_file])
-        # clear_upload_folder()
-        # flash("Analysis complete!", "info")
-        # return redirect(url_for('main.home'))
+        clear_upload_folder()
+        flash("Всички отчети са изтрити успешно.", "success")
         return redirect(url_for('main.reports'))
-

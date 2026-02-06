@@ -1,4 +1,4 @@
-from .views import HomeView, LoginView, LogoutView, UploadView, AnalyzeView, CheckReports, UploadReportView, ReportChecker
+from .views import HomeView, LoginView, LogoutView, UploadView, AnalyzeView, CheckReports, UploadReportView, DeleteReportsView
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify, session
 from flask_login import login_required
 
@@ -45,4 +45,4 @@ main.add_url_rule('/upload', view_func=UploadView.as_view('upload'))
 main.add_url_rule('/analyze', view_func=AnalyzeView.as_view('analyze'))
 main.add_url_rule('/reports', view_func=CheckReports.as_view('reports'))
 main.add_url_rule('/upload-report', view_func=UploadReportView.as_view('upload_report'))
-main.add_url_rule('/report-checker', view_func=ReportChecker.as_view('report_checker'))
+main.add_url_rule('/delete-reports', view_func=DeleteReportsView.as_view('delete_reports'))
