@@ -3,3 +3,7 @@ __pycache__/
 *.pyc
 *.sqlite3
 .idea
+IMPLEMENTATION_SUMMARY.md
+LOGIC_DIAGRAM.md
+TESTING_SUMMARY.md
+TESTING_CHECKLIST.md
