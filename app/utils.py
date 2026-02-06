@@ -142,6 +142,12 @@ def process_excel_with_difference_logic(uploaded_file: FileStorage, output_path:
     
     rp_sheet = wb["ReceivablePayable"]
     
+    # Remove all tables in the sheet to prevent corruption when inserting rows/columns
+    if rp_sheet.tables:
+        tables_to_remove = list(rp_sheet.tables.keys())
+        for table_name in tables_to_remove:
+            del rp_sheet.tables[table_name]
+    
     # Get header row (first row)
     header_row = []
     company_col_index = None
@@ -182,6 +188,12 @@ def process_excel_with_difference_logic(uploaded_file: FileStorage, output_path:
     # Extract ICTemplateDataBS data
     ic_data = {}
     ic_sheet = wb["ICTemplateDataBS"]
+    
+    # Remove all tables in ICTemplateDataBS sheet as well
+    if ic_sheet.tables:
+        tables_to_remove = list(ic_sheet.tables.keys())
+        for table_name in tables_to_remove:
+            del ic_sheet.tables[table_name]
     
     for row in ic_sheet.iter_rows(min_row=2, values_only=True):  # Skip header
         if not row or row[0] is None:
@@ -302,6 +314,13 @@ def process_excel_with_difference_logic(uploaded_file: FileStorage, output_path:
             # Add value in the new Difference column with yellow color (since it's new)
             new_cell = rp_sheet.cell(row=insert_row, column=new_diff_col_index, value=ic_value)
             new_cell.fill = yellow_fill
+    
+    # Clear data validation rules to prevent corruption
+    if hasattr(rp_sheet, 'data_validations') and rp_sheet.data_validations:
+        rp_sheet.data_validations = None
+    
+    if hasattr(ic_sheet, 'data_validations') and ic_sheet.data_validations:
+        ic_sheet.data_validations = None
     
     # Save the modified workbook
     wb.save(output_path)

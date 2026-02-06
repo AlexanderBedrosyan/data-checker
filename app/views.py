@@ -152,7 +152,11 @@ class UploadReportView(MethodView):
             # Generate output filename
             original_filename = secure_filename(uploaded_file.filename)
             filename_without_ext, file_ext = os.path.splitext(original_filename)
-            output_filename = f"{filename_without_ext}_processed{file_ext}"
+            output_filename = None
+            if "processed"not in filename_without_ext:
+                output_filename = f"{filename_without_ext}_processed{file_ext}"
+            else:
+                output_filename = f"{filename_without_ext}{file_ext}"
             output_path = os.path.join(upload_folder, output_filename)
             
             # Process the Excel file with the new logic
