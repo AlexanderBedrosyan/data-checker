@@ -281,18 +281,16 @@ def process_sheet_pair(wb, ic_template_sheet_name, target_sheet_name, yellow_fil
         
         # Apply logic
         new_cell = target_sheet.cell(row=row_idx, column=new_diff_col_index)
-
-        if target_sheet_name == "FTEs" and column4_value is None:
-            # For FTEs sheet, if Column4 is empty → add value with green color (even if values are the same)
+        
+        if abs(matching_ic_value) > 50000 and column4_value is None and target_sheet_name != "FTEs":  # Different values (with small tolerance)
+            # Values are different -> add value and color yellow
             new_cell.value = matching_ic_value
-            new_cell.fill = green_fill
-            # Compare last_diff_value with matching_ic_value
-        elif abs(matching_ic_value) > 50000 and column4_value is None:  # Different values (with small tolerance)
+            new_cell.fill = yellow_fill
+        elif abs(matching_ic_value) > 0 and column4_value is None and target_sheet_name == "FTEs":
             # Values are different -> add value and color yellow
             new_cell.value = matching_ic_value
             new_cell.fill = yellow_fill
         else:
-            # Column4 is not empty -> add value with green color
             new_cell.value = matching_ic_value
             new_cell.fill = green_fill
     
