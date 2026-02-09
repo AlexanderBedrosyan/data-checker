@@ -40,7 +40,7 @@
                   style="display: flex; flex-direction: column; align-items: center; gap: 1rem; margin-bottom: 15px;">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <label class="custom-file-upload">
-                    <input type="file" name="file" accept=".pdf,.xls,.xlsx" multiple>Choose file
+                    <input type="file" name="file" accept=".pdf,.xls,.xlsx,.xlsm" multiple>Choose file
                 </label>
                 <button type="submit">Upload</button>
             </form>
