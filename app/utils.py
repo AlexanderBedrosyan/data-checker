@@ -1,7 +1,12 @@
 from openpyxl import load_workbook
 from openpyxl.styles import PatternFill
 from werkzeug.datastructures import FileStorage
+from werkzeug.utils import secure_filename
 import re
+import io
+import os
+import tempfile
+import warnings
 
 
 def extract_sheets_to_dicts(
@@ -329,9 +334,13 @@ def process_sheet_pair(wb, ic_template_sheet_name, target_sheet_name, yellow_fil
         ic_sheet.data_validations = None
 
 
-def process_excel_with_difference_logic(uploaded_file: FileStorage, output_path: str):
+def process_excel_with_difference_logic(uploaded_file, output_path: str):
     """
     Main function to process the Excel file with the Difference column logic for all sheet pairs.
+    
+    Args:
+        uploaded_file: Either a FileStorage object or a string file path
+        output_path: Path where the processed file should be saved
     
     Processes the following sheet pairs:
     - ICTemplateDataBS → ReceivablePayable
@@ -350,7 +359,13 @@ def process_excel_with_difference_logic(uploaded_file: FileStorage, output_path:
     3. Save the modified file
     """
     # Load workbook with formatting preserved
-    wb = load_workbook(uploaded_file)
+    # Handle both FileStorage and file path
+    if isinstance(uploaded_file, str):
+        # It's a file path
+        wb = load_workbook(uploaded_file)
+    else:
+        # It's a FileStorage object
+        wb = load_workbook(uploaded_file)
     
     # Define color fills
     yellow_fill = PatternFill(start_color="FFFF00", end_color="FFFF00", fill_type="solid")
@@ -370,9 +385,134 @@ def process_excel_with_difference_logic(uploaded_file: FileStorage, output_path:
             process_sheet_pair(wb, ic_template_sheet, target_sheet, yellow_fill, green_fill)
         except ValueError as e:
             # Log the error but continue with other sheets
-            print(f"Warning: Could not process {ic_template_sheet} → {target_sheet}: {e}")
             continue
     
     # Save the modified workbook
     wb.save(output_path)
+    
     return output_path
+
+
+def add_update_data_to_the_list(list_of_excels):
+    """
+    Updates Black Paper file with data from IC Model file.
+    Takes data from IC Model sheets (keys) starting from row 11 and 
+    adds/replaces it in Black Paper sheets (values).
+    
+    Returns the updated Black Paper filename as string (saved to uploads folder).
+    """
+    # Suppress openpyxl warnings about unsupported extensions
+    warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')
+    
+    mapper_of_sheets = {
+        "Accounts Receivable Payable": "ICTemplateDataBS",
+        "Intercompany Loan": "ICTemplateDataICL",
+        "Cash Pool": "ICTemplateDataCP",
+        "Recharged FTEs": "ICTemplateDataFTE"
+    }
+    
+    # Validate that we have exactly 2 files
+    if len(list_of_excels) != 2:
+        raise ValueError("Моля, качете точно 2 файла: Black Paper.xlsx и IC Model файл.")
+    
+    # Separate the files
+    black_paper_file = None
+    ic_model_file = None
+    
+    for excel in list_of_excels:
+        if "black paper" in excel.filename.lower():
+            black_paper_file = excel
+        elif "ic model" in excel.filename.lower():
+            ic_model_file = excel
+    
+    # Validate both files are present
+    if not black_paper_file:
+        raise ValueError("Липсва Black Paper файл. Моля, качете файл с 'Black Paper' в името.")
+    if not ic_model_file:
+        raise ValueError("Липсва IC Model файл. Моля, качете файл с 'IC Model' в името.")
+    
+    # Try loading IC Model with data_only=True first
+    ic_model_wb = load_workbook(ic_model_file, data_only=True, keep_vba=False)
+    
+    # Check if we're getting actual values or None
+    test_sheet_name = "Cash Pool"
+    if test_sheet_name in ic_model_wb.sheetnames:
+        test_ws = ic_model_wb[test_sheet_name]
+        test_values = []
+        for col_idx in range(1, 6):
+            val = test_ws.cell(row=11, column=col_idx).value
+            test_values.append(val)
+        
+        # If all None, we have a problem
+        if all(v is None for v in test_values):
+            ic_model_wb.close()
+            
+            # Try without data_only to at least get something
+            ic_model_wb = load_workbook(ic_model_file, data_only=False, keep_vba=False)
+    
+    black_paper_wb = load_workbook(black_paper_file)
+    
+    # Process each sheet mapping
+    for source_sheet_name, target_sheet_name in mapper_of_sheets.items():
+        # Check if source sheet exists in IC Model
+        if source_sheet_name not in ic_model_wb.sheetnames:
+            continue
+        
+        # Check if target sheet exists in Black Paper
+        if target_sheet_name not in black_paper_wb.sheetnames:
+            continue
+        
+        source_ws = ic_model_wb[source_sheet_name]
+        
+        # Get actual data dimensions
+        source_max_row = source_ws.max_row
+        source_max_col = source_ws.max_column
+        
+        # CRITICAL FIX: Delete the old target sheet entirely to remove all formulas
+        del black_paper_wb[target_sheet_name]
+        
+        # Create a brand new sheet with the same name
+        new_target_ws = black_paper_wb.create_sheet(target_sheet_name)
+        
+        # Copy data from source starting at row 11, place in target starting at row 1
+        rows_copied = 0
+        cells_with_data = 0
+        target_row = 1  # Start writing at row 1 in target
+        
+        for source_row_idx in range(11, source_max_row + 1):
+            has_data = False
+            for col_idx in range(1, source_max_col + 1):
+                source_cell = source_ws.cell(row=source_row_idx, column=col_idx)
+                target_cell = new_target_ws.cell(row=target_row, column=col_idx)
+                
+                # Copy value only (no formulas possible in new sheet)
+                target_cell.value = source_cell.value
+                
+                if source_cell.value is not None:
+                    cells_with_data += 1
+                    has_data = True
+            
+            if has_data:
+                rows_copied += 1
+            
+            target_row += 1  # Move to next row in target
+    
+    # Close IC Model workbook
+    ic_model_wb.close()
+    
+    # Save directly to the uploads folder
+    # Get upload folder path
+    upload_folder = 'uploads'
+    if not os.path.exists(upload_folder):
+        os.makedirs(upload_folder)
+    
+    # Generate secure filename
+    original_filename = secure_filename(black_paper_file.filename)
+    updated_filepath = os.path.join(upload_folder, original_filename)
+    
+    # Save the updated Black Paper file to disk
+    black_paper_wb.save(updated_filepath)
+    black_paper_wb.close()
+    
+    # Return the filename (not wrapped in a list, just the string path)
+    return updated_filepath

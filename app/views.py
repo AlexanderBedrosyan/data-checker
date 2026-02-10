@@ -10,7 +10,7 @@ import unicodedata
 import io
 from statements import pdf_convert_to_excel, basic_model, diff_checker, company_mapper
 from statements.bc_balances import bc_balance
-from app.utils import extract_sheets_to_dicts, ic_template_data_bs_preparation, column4_finder, process_excel_with_difference_logic
+from app.utils import extract_sheets_to_dicts, ic_template_data_bs_preparation, column4_finder, process_excel_with_difference_logic, add_update_data_to_the_list
 
 # Load the .env file
 load_dotenv()
@@ -136,31 +136,25 @@ class UploadReportView(MethodView):
 
     def post(self):
         uploaded_files = request.files.getlist('file')
-        if not uploaded_files or not uploaded_files[0].filename:
-            flash("Не е избран файл.", "danger")
+        
+        # Validate files were uploaded
+        if not uploaded_files or len(uploaded_files) != 2:
+            flash("Моля, качете точно 2 файла: Black Paper.xlsx и IC Model файл.", "danger")
             return redirect(url_for('main.reports'))
 
         try:
-            # Get the uploaded file
-            uploaded_file = uploaded_files[0]
+            # Update Black Paper with IC Model data and get the file path
+            updated_black_paper_path = add_update_data_to_the_list(uploaded_files)
             
-            # Create a temporary file path for the output
+            # Create output path for the processed file
             upload_folder = current_app.config.get('UPLOAD_FOLDER', 'uploads')
-            if not os.path.exists(upload_folder):
-                os.makedirs(upload_folder)
-            
-            # Generate output filename
-            original_filename = secure_filename(uploaded_file.filename)
+            original_filename = os.path.basename(updated_black_paper_path)
             filename_without_ext, file_ext = os.path.splitext(original_filename)
-            output_filename = None
-            if "processed"not in filename_without_ext:
-                output_filename = f"{filename_without_ext}_processed{file_ext}"
-            else:
-                output_filename = f"{filename_without_ext}{file_ext}"
+            output_filename = f"{filename_without_ext}_processed{file_ext}"
             output_path = os.path.join(upload_folder, output_filename)
             
-            # Process the Excel file with the new logic
-            result_path = process_excel_with_difference_logic(uploaded_file, output_path)
+            # Process the updated Excel file with the difference logic
+            result_path = process_excel_with_difference_logic(updated_black_paper_path, output_path)
             
             # Load file into memory before cleanup to avoid file locking issues
             with open(result_path, 'rb') as f:
