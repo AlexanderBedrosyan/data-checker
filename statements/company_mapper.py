@@ -8,6 +8,7 @@ company_mapper = {
     "dsv_road_as": dsv_road_as,
     "svend_e_sorensen": svend_e_sorensen,
     "henrik_skov_christensen": henrik_skov_christensen,
-    "eurobulk": eurobulk
+    "eurobulk": eurobulk,
+    "hcs": hcs_transport_spedition,
     # "stenaline_scandinavia": stenaline_scandinavia,
 }
