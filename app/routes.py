@@ -24,6 +24,7 @@ def get_file_options():
         {'id': 'svend_e_sorensen', 'text': 'Svend E. Sorensen'},
         {'id': 'henrik_skov_christensen', 'text': 'Henrik Skov Christensen'},
         {'id': 'eurobulk', 'text': 'Eurobulk'},
+        {'id': 'hcs', 'text': 'HCS A/S'},
         # {'id': 'stenaline_scandinavia', 'text': 'Stena Line Scandinavia AB'},
     ]
 
